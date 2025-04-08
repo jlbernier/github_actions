@@ -1,0 +1,37 @@
+name: Create Commit Workflow
+
+on:
+  push:
+    branches: 
+      - main
+  workflow_dispatch:
+
+jobs:
+  create_commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure git
+        run: |
+          git config --global user.email "my-bot@bot.com"
+          git config --global user.name "my-bot"
+
+      - name: Push a file to our repository
+        run: |
+          pwd
+          ls -a
+          git init
+          git remote add origin "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
+          git fetch
+          git checkout main || git checkout -b main
+          git branch --set-upstream-to=origin/main || echo "No upstream branch set"
+          git pull || echo "Failed to pull or branch already up-to-date"
+          pytest >> log_pytest.txt
+          ls -a
+          git add .
+          git commit -m "random file from action" || echo "No changes to commit"
+          git push
